@@ -14,7 +14,7 @@ class NoteManager extends Component
     ];
 
     public function mount(){
-        $this->notes = auth()->user()->notes;
+        $this->notes = auth()->user()->notes()->get();
         $this->emitTo('note-editor', 'loadNote',
                     $this->notes
                         ->sortBy('created_at')
@@ -42,8 +42,23 @@ class NoteManager extends Component
                 'created_at' => now(),
             ]);
 
+            $this->emitSelf('refresh');
             return Note::find($orphanedNote->id);
         }
+    }
+
+    public function deleteNote($noteId){
+        Note::where([
+                'id' => $noteId
+                ])
+            ->delete();
+
+        if(auth()->user()->countAllNotes() <= 0){
+            $this->createBlank();
+        }
+
+        $this->emit('refresh');
+
     }
 
     public function render()

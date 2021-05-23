@@ -12,7 +12,8 @@ class NoteEditor extends Component
     public $content;
 
     protected $listeners = [
-        'loadNote'
+        'loadNote',
+        'refresh' => '$refresh',
     ];
 
     public function loadNote($noteId){
