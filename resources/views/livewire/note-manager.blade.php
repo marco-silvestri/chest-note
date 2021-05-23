@@ -9,7 +9,13 @@
     </div>
     @forelse ($notes as $note)
     <div>
-        <div class="border border-green-500 p-2 m-2 flex" wire:click="$emit('loadNote', {{$note->id}})">
+        <div class="border
+        @if($selectedNoteId != $note->id)
+        border-yellow-500
+        @else
+        border-green-500
+        @endif
+        p-2 m-2 flex" wire:click="$emit('loadNote', {{$note->id}})">
         <div>
         <div>
             @empty($note->title)
@@ -27,11 +33,12 @@
         </div>
         </div>
         <div>
-            <button wire:click="deleteNote({{$note->id}})" type="button">
-                X
-            </button>
+
         </div>
     </div>
+    <button wire:click="deleteNote({{$note->id}})" type="button">
+        X
+    </button>
     @empty
         <div>
             There are no notes here...

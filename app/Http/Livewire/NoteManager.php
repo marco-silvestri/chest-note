@@ -8,18 +8,16 @@ use Livewire\Component;
 class NoteManager extends Component
 {
     public $notes;
+    public $selectedNoteId;
 
     protected $listeners = [
         'refresh' => '$refresh',
+        'setSelected'
     ];
 
-    public function mount(){
-        $this->notes = auth()->user()->notes()->get();
-        $this->emitTo('note-editor', 'loadNote',
-                    $this->notes
-                        ->sortBy('created_at')
-                        ->first()
-                        ->id);
+    public function setSelected($noteId){
+        $this->selectedNoteId = $noteId;
+        $this->emitSelf('refresh');
     }
 
     public function createBlank()
@@ -36,15 +34,16 @@ class NoteManager extends Component
                 'title' => '',
                 'content' => '',
             ]);
-            return $note;
+            $this->selectedId = $note->id;
         } else {
             $orphanedNote->update([
                 'created_at' => now(),
             ]);
-
-            $this->emitSelf('refresh');
-            return Note::find($orphanedNote->id);
+            $this->selectedId = $orphanedNote->id;
         }
+
+        $this->emitTo('note-editor', 'loadNote',$this->selectedId);
+        $this->emit('refresh');
     }
 
     public function deleteNote($noteId){
@@ -56,13 +55,19 @@ class NoteManager extends Component
         if(auth()->user()->countAllNotes() <= 0){
             $this->createBlank();
         }
+    }
 
-        $this->emit('refresh');
-
+    public function refreshSelected(){
+        $this->notes = auth()->user()->notes()->get();
+        $selectedNoteId = $this->notes
+        ->sortBy('created_at')
+        ->first()
+        ->id;
     }
 
     public function render()
     {
+        $this->refreshSelected();
         return view('livewire.note-manager');
     }
 }
